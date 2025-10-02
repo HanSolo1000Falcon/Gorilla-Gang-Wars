@@ -32,5 +32,5 @@ public class NetworkGunCallbacks : MonoBehaviour
             RegisteredCallbacks.Remove(ngc);
     }
 
-    public virtual void OnShot(VRRig shooter, GunType gunType, float distance) { }
+    public virtual void OnShot(VRRig shooter, VRRig shot, GunType gunType, float distance) { }
 }

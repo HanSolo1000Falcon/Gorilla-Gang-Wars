@@ -40,8 +40,10 @@ public class NetworkEventListener : MonoBehaviour
                 VRRig shooter =
                         GorillaParent.instance.vrrigs.Find(rig => rig.OwningNetPlayer.ActorNumber == eventData.Sender);
 
+                VRRig shot = GorillaParent.instance.vrrigs.Find(rig => rig.OwningNetPlayer.ActorNumber == (int)data[2]);
+
                 foreach (NetworkGunCallbacks ngc in NetworkGunCallbacks.RegisteredCallbacks)
-                    ngc.OnShot(shooter, (GunType)data[0], (float)data[1]);
+                    ngc.OnShot(shooter, shot, (GunType)data[0], (float)data[1]);
 
                 break;
         }

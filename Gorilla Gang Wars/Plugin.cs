@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using BepInEx;
 using Gorilla_Gang_Wars.Networking_Core;
 using HarmonyLib;
@@ -9,13 +11,14 @@ namespace Gorilla_Gang_Wars;
 [BepInPlugin(Constants.PluginGuid, Constants.PluginName, Constants.PluginVersion)]
 public class Plugin : BaseUnityPlugin
 {
-    private GameObject componentHolder;
+    private readonly Harmony    harmony = new(Constants.PluginGuid);
+    private          GameObject componentHolder;
+
+    private bool hasModInitialized;
 
     private void Start()
     {
         GorillaTagger.OnPlayerSpawned(OnGameInitialized);
-        Harmony harmony = new(Constants.PluginGuid);
-        harmony.PatchAll();
     }
 
     private void OnGameInitialized()
@@ -32,13 +35,31 @@ public class Plugin : BaseUnityPlugin
 
     private void OnReturnedToSinglePlayer()
     {
-        if (componentHolder != null)
-            Destroy(componentHolder);
+        if (hasModInitialized)
+            DeInitializeMod();
     }
 
     private void InitializeMod()
     {
         componentHolder = new GameObject("Gorilla Guns Centre Of Operations (GGCOF)");
         componentHolder.AddComponent<NetworkEventListener>();
+
+        harmony.PatchAll();
+        hasModInitialized = true;
+
+        VRRig.LocalRig.AddComponent<GorillaGangMember>();
+    }
+
+    private void DeInitializeMod()
+    {
+        Destroy(componentHolder);
+
+        harmony.UnpatchSelf();
+
+        List<GorillaGangMember> gangalangs = GorillaGangMember.GangMembers.ToList();
+        foreach (GorillaGangMember gangMember in gangalangs)
+            Destroy(gangMember);
+
+        hasModInitialized = false;
     }
 }
