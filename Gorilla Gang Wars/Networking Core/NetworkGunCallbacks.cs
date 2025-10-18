@@ -6,7 +6,7 @@ namespace Gorilla_Gang_Wars.Networking_Core;
 
 public class NetworkGunCallbacks : MonoBehaviour
 {
-    public static readonly List<NetworkGunCallbacks> RegisteredCallbacks = new();
+    public static readonly List<NetworkGunCallbacks> RegisteredCallbacks = [];
 
     /// <summary>
     ///     A must-run method to register your callbacks.
@@ -14,7 +14,7 @@ public class NetworkGunCallbacks : MonoBehaviour
     /// <param name="ngc">
     ///     Preferably just passing in 'this'
     /// </param>
-    protected void RegisterNetworkGunCallback(NetworkGunCallbacks ngc)
+    private void RegisterNetworkGunCallback(NetworkGunCallbacks ngc)
     {
         if (!RegisteredCallbacks.Contains(ngc))
             RegisteredCallbacks.Add(ngc);
@@ -26,11 +26,13 @@ public class NetworkGunCallbacks : MonoBehaviour
     /// <param name="ngc">
     ///     Preferably just passing in 'this'
     /// </param>
-    protected void DeregisterNetworkGunCallback(NetworkGunCallbacks ngc)
+    private void DeregisterNetworkGunCallback(NetworkGunCallbacks ngc)
     {
         if (RegisteredCallbacks.Contains(ngc))
             RegisteredCallbacks.Remove(ngc);
     }
 
-    public virtual void OnShot(VRRig shooter, VRRig shot, GunType gunType, float distance) { }
+    public virtual void OnShot(VRRig             shooter, VRRig shot, GunType gunType, float distance) { }
+    public virtual void OnMasterTransition(float timeSinceLastGunSpawn) { }
+    public virtual void OnGunSpawnRequested(Vector3 gunPosition, Quaternion gunRotation, GunType gun) { }
 }

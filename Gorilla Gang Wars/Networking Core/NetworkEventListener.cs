@@ -46,6 +46,20 @@ public class NetworkEventListener : MonoBehaviour
                     ngc.OnShot(shooter, shot, (GunType)data[0], (float)data[1]);
 
                 break;
+            
+            case (byte)NetworkEvents.MasterTransitionEvent:
+                // cant bother rn
+                break;
+            
+            case (byte)NetworkEvents.SpawnGunEvent:
+                Vector3 gunPosition = (Vector3)data[0];
+                Quaternion gunRotation = (Quaternion)data[1];
+                GunType gun = (GunType)data[2];
+                
+                foreach (NetworkGunCallbacks ngc in NetworkGunCallbacks.RegisteredCallbacks)
+                    ngc.OnGunSpawnRequested(gunPosition, gunRotation, gun);
+                
+                break;
         }
     }
 }

@@ -39,15 +39,13 @@ public static class GangMemberAssignmentHandler
             if (vrrig.TryGetComponent(out GorillaGangMember gangMemberLocal))
             {
                 if (gangMemberLocal.IsMaster)
-                {
                     foreach (GorillaGangMember gangMember in GorillaGangMember.GangMembers)
                     {
                         if (gangMember == gangMemberLocal)
                             continue;
-                        
+
                         gangMember.PerformMasterCalculations();
                     }
-                }
                 
                 Object.Destroy(gangMemberLocal);
             }
