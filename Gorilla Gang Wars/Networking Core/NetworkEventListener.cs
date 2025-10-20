@@ -1,3 +1,4 @@
+using System;
 using ExitGames.Client.Photon;
 using Gorilla_Gang_Wars.Types;
 using Photon.Pun;
@@ -13,6 +14,9 @@ public class NetworkEventListener : MonoBehaviour
 
     private void OnEventReceived(EventData eventData)
     {
+        if (!Enum.IsDefined(typeof(NetworkEvents), eventData.Code))
+            return;
+
         object[] data;
         if (eventData.Parameters.TryGetValue(ParameterCode.Data, out object rawData))
         {
@@ -22,7 +26,7 @@ public class NetworkEventListener : MonoBehaviour
             }
             else
             {
-                Debug.LogError("Data is not an object array, what the hell?");
+                Debug.LogError("Data is not an object array, what the hell?\nEvent code: " + eventData.Code);
 
                 return;
             }
@@ -37,28 +41,22 @@ public class NetworkEventListener : MonoBehaviour
         switch (eventData.Code)
         {
             case (byte)NetworkEvents.ShootEvent:
-                VRRig shooter =
-                        GorillaParent.instance.vrrigs.Find(rig => rig.OwningNetPlayer.ActorNumber == eventData.Sender);
-
+                VRRig shooter = GorillaParent.instance.vrrigs.Find(rig => rig.OwningNetPlayer.ActorNumber == eventData.Sender);
                 VRRig shot = GorillaParent.instance.vrrigs.Find(rig => rig.OwningNetPlayer.ActorNumber == (int)data[2]);
-
-                foreach (NetworkGunCallbacks ngc in NetworkGunCallbacks.RegisteredCallbacks)
-                    ngc.OnShot(shooter, shot, (GunType)data[0], (float)data[1]);
+                NetworkGunCallbacks.Instance.OnShot(shooter, shot, (GunType)data[0], (float)data[1]);
 
                 break;
-            
+
             case (byte)NetworkEvents.MasterTransitionEvent:
                 // cant bother rn
                 break;
-            
+
             case (byte)NetworkEvents.SpawnGunEvent:
-                Vector3 gunPosition = (Vector3)data[0];
+                Vector3    gunPosition = (Vector3)data[0];
                 Quaternion gunRotation = (Quaternion)data[1];
-                GunType gun = (GunType)data[2];
-                
-                foreach (NetworkGunCallbacks ngc in NetworkGunCallbacks.RegisteredCallbacks)
-                    ngc.OnGunSpawnRequested(gunPosition, gunRotation, gun);
-                
+                GunType    gun         = (GunType)data[2];
+                NetworkGunCallbacks.Instance.OnGunSpawnRequested(gunPosition, gunRotation, gun);
+
                 break;
         }
     }

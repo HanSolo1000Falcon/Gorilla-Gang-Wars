@@ -14,21 +14,22 @@ namespace Gorilla_Gang_Wars;
 public class Plugin : BaseUnityPlugin
 {
     public const string PlayerPropertiesKey = "Gorilla Gang Wars Player Properties";
-    
+
     private readonly Harmony    harmony = new(Constants.PluginGuid);
     private          GameObject componentHolder;
 
     private bool hasModInitialized;
-    
-    public static void UpdatePlayerProperties(int currentHealth)
-    {
-        PhotonNetwork.LocalPlayer.SetCustomProperties(new Hashtable { { PlayerPropertiesKey, $"Health;{currentHealth}" }, });
-    }
 
     private void Start()
     {
         GorillaTagger.OnPlayerSpawned(OnGameInitialized);
         PhotonNetwork.LocalPlayer.SetCustomProperties(new Hashtable { { Constants.PluginName, true }, });
+    }
+
+    public static void UpdatePlayerProperties(int currentHealth)
+    {
+        PhotonNetwork.LocalPlayer.SetCustomProperties(new Hashtable
+                { { PlayerPropertiesKey, $"Health;{currentHealth}" }, });
     }
 
     private void OnGameInitialized()
@@ -53,6 +54,7 @@ public class Plugin : BaseUnityPlugin
     {
         componentHolder = new GameObject("Gorilla Gang Wars Centre Of Operations (GGWCOP)");
         componentHolder.AddComponent<NetworkEventListener>();
+        componentHolder.AddComponent<NetworkGunCallbacks>();
 
         harmony.PatchAll();
         hasModInitialized = true;
@@ -66,10 +68,15 @@ public class Plugin : BaseUnityPlugin
         Destroy(componentHolder);
 
         harmony.UnpatchSelf();
-        
+
         List<GorillaGangMember> gangalangs = GorillaGangMember.GangMembers.ToList();
         foreach (GorillaGangMember gangMember in gangalangs)
             Destroy(gangMember);
+        
+        foreach (GameObject gun in NetworkGunCallbacks.Instance.SpawnedGuns.Keys)
+            Destroy(gun);
+        
+        NetworkGunCallbacks.Instance.SpawnedGuns.Clear();
 
         PhotonNetwork.LocalPlayer.SetCustomProperties(new Hashtable { { PlayerPropertiesKey, null }, });
         hasModInitialized = false;

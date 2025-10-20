@@ -4,5 +4,5 @@ public enum NetworkEvents : byte
 {
     ShootEvent            = 30,
     MasterTransitionEvent = 154,
-    SpawnGunEvent = 86,
+    SpawnGunEvent         = 86,
 }

@@ -6,33 +6,48 @@ namespace Gorilla_Gang_Wars.Networking_Core;
 
 public class NetworkGunCallbacks : MonoBehaviour
 {
-    public static readonly List<NetworkGunCallbacks> RegisteredCallbacks = [];
+    private float         lastTimeGunSpawned;
+    private float         startOfGracePeriod;
+    private bool          isGracePeriod;
+    public  Dictionary<GameObject, GunType> SpawnedGuns   = [];
+    
+    public static NetworkGunCallbacks Instance { get; private set; }
 
-    /// <summary>
-    ///     A must-run method to register your callbacks.
-    /// </summary>
-    /// <param name="ngc">
-    ///     Preferably just passing in 'this'
-    /// </param>
-    private void RegisterNetworkGunCallback(NetworkGunCallbacks ngc)
+    private void Update()
     {
-        if (!RegisteredCallbacks.Contains(ngc))
-            RegisteredCallbacks.Add(ngc);
+        if (isGracePeriod && Time.time - startOfGracePeriod > 10f)
+            isGracePeriod = false;
     }
 
-    /// <summary>
-    ///     A must-run method to deregister your callbacks.
-    /// </summary>
-    /// <param name="ngc">
-    ///     Preferably just passing in 'this'
-    /// </param>
-    private void DeregisterNetworkGunCallback(NetworkGunCallbacks ngc)
+    private void Awake()
     {
-        if (RegisteredCallbacks.Contains(ngc))
-            RegisteredCallbacks.Remove(ngc);
+        Instance           = this;
+        startOfGracePeriod = Time.time;
+        isGracePeriod      = true;
     }
 
-    public virtual void OnShot(VRRig             shooter, VRRig shot, GunType gunType, float distance) { }
-    public virtual void OnMasterTransition(float timeSinceLastGunSpawn) { }
-    public virtual void OnGunSpawnRequested(Vector3 gunPosition, Quaternion gunRotation, GunType gun) { }
+    public void OnShot(VRRig                shooter, VRRig shot, GunType gunType, float distance) { }
+    public void OnMasterTransition(float    timeSinceLastGunSpawn)                            { }
+
+    public void OnGunSpawnRequested(Vector3 gunPosition, Quaternion gunRotation, GunType gun)
+    {
+        if (!isGracePeriod && Time.time                          - lastTimeGunSpawned <
+            GorillaGangMember.GunSpawnCooldown - GorillaGangMember.GunSpawnCooldown / 4f)
+            return;
+        
+        // temporary
+        Debug.Log("spawning cube at the position " + gunPosition + " and the rotation " + gunRotation + ".");
+        GameObject foo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        foo.transform.localScale = Vector3.one;
+        foo.transform.position   = gunPosition;
+        foo.transform.rotation   = gunRotation;
+
+        if (foo.TryGetComponent(out Renderer rend))
+        {
+            rend.material.shader = Shader.Find("GorillaTag/UberShader");
+            rend.material.color = Color.white;
+        }
+        
+        SpawnedGuns.Add(foo, gun);
+    }
 }
