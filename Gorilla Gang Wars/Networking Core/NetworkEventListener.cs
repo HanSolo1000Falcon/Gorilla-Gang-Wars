@@ -1,5 +1,6 @@
 using System;
 using ExitGames.Client.Photon;
+using Gorilla_Gang_Wars.Tools;
 using Gorilla_Gang_Wars.Types;
 using Photon.Pun;
 using Photon.Realtime;
@@ -15,6 +16,11 @@ public class NetworkEventListener : MonoBehaviour
     private void OnEventReceived(EventData eventData)
     {
         if (!Enum.IsDefined(typeof(NetworkEvents), eventData.Code))
+            return;
+        
+        VRRig sender = GorillaParent.instance.vrrigs.Find(rig => rig.OwningNetPlayer.ActorNumber == eventData.Sender);
+
+        if (!sender.IsGangMember())
             return;
 
         object[] data;
@@ -52,6 +58,9 @@ public class NetworkEventListener : MonoBehaviour
                 break;
 
             case (byte)NetworkEvents.SpawnGunEvent:
+                if (!sender.AssociatedGangMember().IsMaster)
+                    return;
+                
                 Vector3    gunPosition = (Vector3)data[0];
                 Quaternion gunRotation = (Quaternion)data[1];
                 GunType    gun         = (GunType)data[2];

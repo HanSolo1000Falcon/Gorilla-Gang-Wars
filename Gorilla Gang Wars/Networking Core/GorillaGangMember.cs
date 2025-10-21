@@ -3,7 +3,6 @@ using System.Linq;
 using ExitGames.Client.Photon;
 using Gorilla_Gang_Wars.Types;
 using GorillaLocomotion;
-using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
 
@@ -61,7 +60,7 @@ public class GorillaGangMember : MonoBehaviour
             GunType    gun      = GetRandomGun();
             Quaternion rotation = Quaternion.LookRotation(hit.normal);
             Vector3    position = hit.point;
-            PhotonNetwork.RaiseEvent((byte)NetworkEvents.SpawnGunEvent,
+            PhotonDummy.RaiseEvent(NetworkEvents.SpawnGunEvent,
                     new object[] { position, rotation, gun, },
                     new RaiseEventOptions { Receivers = ReceiverGroup.All, }, SendOptions.SendReliable);
 
@@ -94,7 +93,7 @@ public class GorillaGangMember : MonoBehaviour
 
         RaiseEventOptions raiseEventOptions = new() { TargetActors = [newMasterActorNumber,], };
         object[]          data              = [lastGunSpawnTime,];
-        PhotonNetwork.RaiseEvent((byte)NetworkEvents.MasterTransitionEvent, data, raiseEventOptions,
+        PhotonDummy.RaiseEvent(NetworkEvents.MasterTransitionEvent, data, raiseEventOptions,
                 SendOptions.SendReliable);
     }
 
