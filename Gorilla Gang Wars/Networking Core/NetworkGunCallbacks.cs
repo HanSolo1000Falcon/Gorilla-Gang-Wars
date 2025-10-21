@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using Gorilla_Gang_Wars.Tools;
 using Gorilla_Gang_Wars.Types;
 using UnityEngine;
 
@@ -31,9 +33,14 @@ public class NetworkGunCallbacks : MonoBehaviour
 
     public void OnGunSpawnRequested(Vector3 gunPosition, Quaternion gunRotation, GunType gun)
     {
-        if (!isGracePeriod && Time.time                          - lastTimeGunSpawned <
+        if (!isGracePeriod && Time.time        - lastTimeGunSpawned <
             GorillaGangMember.GunSpawnCooldown - GorillaGangMember.GunSpawnCooldown / 4f)
+        {
+            GorillaGangMember.GangMembers.FirstOrDefault(gangMember => gangMember.IsMaster)?.AssociatedRig.RemoveGangMember(); // anti cheat thingy
             return;
+        }
+        
+        lastTimeGunSpawned = Time.time;
         
         // temporary
         Debug.Log("spawning cube at the position " + gunPosition + " and the rotation " + gunRotation + ".");
