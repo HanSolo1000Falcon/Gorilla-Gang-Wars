@@ -19,9 +19,7 @@ public class NetworkEventListener : MonoBehaviour
             return;
         
         VRRig sender = GorillaParent.instance.vrrigs.Find(rig => rig.OwningNetPlayer.ActorNumber == eventData.Sender);
-
-        if (!sender.IsGangMember())
-            return;
+        if (sender == null || !sender.IsGangMember()) return;
 
         object[] data;
         if (eventData.Parameters.TryGetValue(ParameterCode.Data, out object rawData))
@@ -44,19 +42,25 @@ public class NetworkEventListener : MonoBehaviour
             return;
         }
 
-        switch (eventData.Code)
+        NetworkEvents networkEvent = (NetworkEvents)eventData.Code;
+        
+        switch (networkEvent)
         {
-            case (byte)NetworkEvents.ShootEvent:
+            case NetworkEvents.ShootEvent:
                 VRRig shooter = GorillaParent.instance.vrrigs.Find(rig => rig.OwningNetPlayer.ActorNumber == eventData.Sender);
                 VRRig shot = GorillaParent.instance.vrrigs.Find(rig => rig.OwningNetPlayer.ActorNumber == (int)data[2]);
                 NetworkGunCallbacks.Instance.OnShot(shooter, shot, (GunType)data[0], (float)data[1]);
 
                 break;
 
-            case (byte)NetworkEvents.SpawnGunEvent:
+            case NetworkEvents.SpawnGunEvent:
                 if (!sender.AssociatedGangMember().IsMaster)
-                    return;
+                {
+                    Debug.Log("gng yous is not master :v:");
+                    break;
+                }
                 
+                Debug.Log("FUBBAKKY");
                 Vector3    gunPosition = (Vector3)data[0];
                 Quaternion gunRotation = (Quaternion)data[1];
                 GunType    gun         = (GunType)data[2];

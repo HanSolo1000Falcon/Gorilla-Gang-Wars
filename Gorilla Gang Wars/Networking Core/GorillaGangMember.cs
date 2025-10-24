@@ -75,21 +75,6 @@ public class GorillaGangMember : MonoBehaviour
         }
     }
 
-    private void OnEnable()
-    {
-        _gangMembers.Add(this);
-        foreach (GorillaGangMember gangMember in GangMembers)
-            gangMember.PerformMasterCalculations();
-    }
-    
-    private void OnDisable()
-    {
-        _gangMembers.Remove(this);
-        foreach (GorillaGangMember gangMember in GangMembers)
-            gangMember.PerformMasterCalculations();
-    }
-
-
     private GunType GetRandomGun() =>
             GunType.Glock19; // temporary when testing, will add actual weighted assignments sooner or later
 

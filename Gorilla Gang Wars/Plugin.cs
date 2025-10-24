@@ -68,10 +68,6 @@ public class Plugin : BaseUnityPlugin
         Destroy(componentHolder);
 
         harmony.UnpatchSelf();
-
-        List<GorillaGangMember> gangalangs = GorillaGangMember.GangMembers.ToList();
-        foreach (GorillaGangMember gangMember in gangalangs)
-            Destroy(gangMember);
         
         foreach (GameObject gun in NetworkGunCallbacks.Instance.SpawnedGuns.Keys)
             Destroy(gun);
