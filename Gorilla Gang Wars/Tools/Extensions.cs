@@ -17,11 +17,17 @@ public static class Extensions
     public static bool IsGangMember(this Player    player) => gangMembers.Contains(player.UserId);
     
     public static GorillaGangMember AssociatedGangMember(this VRRig rig) => gangMemberRigs[rig];
+    
+    public static VRRig GetRig(this Player player) => GorillaParent.instance.vrrigs.Find(rig => rig.OwningNetPlayer.UserId == player.UserId);
+    public static VRRig GetRig(this NetPlayer player) => GorillaParent.instance.vrrigs.Find(rig => rig.OwningNetPlayer.UserId == player.UserId);
 
     public static void AddGangMember(this VRRig rig)
     {
         gangMembers.Add(rig.OwningNetPlayer.UserId);
         gangMemberRigs[rig] = rig.AddComponent<GorillaGangMember>();
+
+        foreach (GorillaGangMember gangMember in GorillaGangMember.GangMembers)
+            gangMember.PerformMasterCalculations();
         
         // ReSharper disable once InvertIf
         if (GorillaGangMember.LocalGangMember.IsMaster)
@@ -41,5 +47,7 @@ public static class Extensions
         if (rig.TryGetComponent(out GorillaGangMember gangMember)) Object.Destroy(gangMember);
         if (gangMembers.Contains(rig.OwningNetPlayer.UserId)) gangMembers.Remove(rig.OwningNetPlayer.UserId);
         gangMemberRigs.Remove(rig);
+        foreach (GorillaGangMember gangMember2 in GorillaGangMember.GangMembers)
+            gangMember2.PerformMasterCalculations();
     }
 }

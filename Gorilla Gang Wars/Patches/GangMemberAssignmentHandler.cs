@@ -40,7 +40,9 @@ public static class GangMemberAssignmentHandler
         private static void Postfix(NetPlayer player, VRRig vrrig)
         {
             spawnedRigs.Remove(vrrig);
-            vrrig.RemoveGangMember();
+            
+            if (vrrig.IsGangMember())
+                vrrig.RemoveGangMember();
         }
     }
 }

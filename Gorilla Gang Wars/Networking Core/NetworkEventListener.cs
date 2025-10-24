@@ -53,10 +53,6 @@ public class NetworkEventListener : MonoBehaviour
 
                 break;
 
-            case (byte)NetworkEvents.MasterTransitionEvent:
-                // cant bother rn
-                break;
-
             case (byte)NetworkEvents.SpawnGunEvent:
                 if (!sender.AssociatedGangMember().IsMaster)
                     return;

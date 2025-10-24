@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using ExitGames.Client.Photon;
+using Gorilla_Gang_Wars.Tools;
 using Gorilla_Gang_Wars.Types;
 using GorillaLocomotion;
+using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
 
@@ -24,6 +26,11 @@ public class GorillaGangMember : MonoBehaviour
     private       float                            lastGunSpawnTime;
     public static IReadOnlyList<GorillaGangMember> GangMembers => _gangMembers;
 
+    /// <summary>
+    /// Can be the same as LocalGangMember, but is not guaranteed to be.
+    /// </summary>
+    // idfk why i added a summary but it feels proffesional ttype shit
+    public static GorillaGangMember MasterGangMember => GangMembers.FirstOrDefault(gangMember => gangMember.IsMaster);
     public static GorillaGangMember LocalGangMember =>
             GangMembers.FirstOrDefault(gangMember => gangMember.AssociatedRig.isLocal);
 
@@ -86,33 +93,36 @@ public class GorillaGangMember : MonoBehaviour
     private GunType GetRandomGun() =>
             GunType.Glock19; // temporary when testing, will add actual weighted assignments sooner or later
 
-    public void TransitionMaster(int newMasterActorNumber)
-    {
-        if (!AssociatedRig.isLocal || !IsMaster)
-            return;
-
-        RaiseEventOptions raiseEventOptions = new() { TargetActors = [newMasterActorNumber,], };
-        object[]          data              = [lastGunSpawnTime,];
-        PhotonDummy.RaiseEvent(NetworkEvents.MasterTransitionEvent, data, raiseEventOptions,
-                SendOptions.SendReliable);
-    }
-
     public void PerformMasterCalculations()
     {
-        bool isLocalLowest = true;
-        foreach (GorillaGangMember gangMember in GangMembers)
+        if (PhotonNetwork.MasterClient.IsGangMember())
         {
-            if (gangMember == this)
-                continue;
+            GorillaGangMember masterGangMember = PhotonNetwork.MasterClient.GetRig().AssociatedGangMember();
+            masterGangMember.IsMaster = true;
 
-            if (gangMember.AssociatedRig.OwningNetPlayer.ActorNumber < AssociatedRig.OwningNetPlayer.ActorNumber)
+            foreach (GorillaGangMember gangMember in GangMembers)
             {
-                isLocalLowest = false;
+                if (gangMember == masterGangMember)
+                    continue;
 
-                break;
+                gangMember.IsMaster = false;
             }
         }
+        else
+        {
+            int lowestActorNumber = int.MaxValue;
+            GorillaGangMember selectedMaster = null;
+            foreach (GorillaGangMember gangMember in GangMembers)
+            {
+                if (gangMember.AssociatedRig.OwningNetPlayer.ActorNumber >= lowestActorNumber)
+                    continue;
 
-        IsMaster = isLocalLowest;
+                lowestActorNumber = gangMember.AssociatedRig.OwningNetPlayer.ActorNumber;
+                selectedMaster    = gangMember;
+            }
+            
+            foreach (GorillaGangMember gangMember in GangMembers)
+                gangMember.IsMaster = gangMember == selectedMaster;
+        }
     }
 }
